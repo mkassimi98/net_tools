@@ -1,3 +1,6 @@
+# Workshop capture backups (generated locally by scripts/checklist/*.sh)
+captures/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -216,3 +219,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+*.pdf
+
+# Local overrides for shared script config (per category)
+scripts/connectivity-troubleshooting/config/local.env
+scripts/port-service-inspection/config/local.env
+scripts/network-discovery/config/local.env
