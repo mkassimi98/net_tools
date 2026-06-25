@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import ipaddress
 import re
 import shutil
 import subprocess
@@ -24,12 +25,32 @@ def run(command):
 
 
 def detect_local_cidr():
-    output = run(["ip", "-o", "-4", "addr", "show", "scope", "global"])
+    default_routes = run(["ip", "-o", "-4", "route", "show", "default"])
+    dev_match = re.search(r"\bdev\s+(\S+)", default_routes)
+    if dev_match:
+        output = run(
+            [
+                "ip",
+                "-o",
+                "-4",
+                "addr",
+                "show",
+                "dev",
+                dev_match.group(1),
+                "scope",
+                "global",
+            ]
+        )
+    else:
+        output = run(["ip", "-o", "-4", "addr", "show", "scope", "global"])
+
     for line in output.splitlines():
         parts = line.split()
         for part in parts:
             if "/" in part and re.match(r"^\d+\.\d+\.\d+\.\d+/\d+$", part):
-                return part
+                interface = ipaddress.ip_interface(part)
+                if interface.network.prefixlen < 32:
+                    return str(interface.network)
     return ""
 
 

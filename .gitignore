@@ -184,6 +184,8 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+python-video-recording-runbook.md
+checklist.md
 # PyCharm
 #   JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #   be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
@@ -226,3 +228,6 @@ __marimo__/
 scripts/connectivity-troubleshooting/config/local.env
 scripts/port-service-inspection/config/local.env
 scripts/network-discovery/config/local.env
+scripts/traffic-capture-analysis/config/local.env
+scripts/ssh-session-observability/config/local.env
+scripts/vpn-remote-access/config/local.env

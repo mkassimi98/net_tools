@@ -50,6 +50,29 @@ So far:
   - DNS lookups (`dig`/`nslookup`)
   - local device discovery (`arp-scan --localnet`, needs sudo)
   - physical link state (`ethtool` for wired, `iw dev ... link` for WiFi)
+- `scripts/ssh-session-observability/` — checklist section 8 (SSH sessions and
+  host observability):
+  - active sessions: `who`, `w`, `loginctl list-sessions`
+  - login history: `last`
+  - SSH service logs via `journalctl -u ssh`, annotated ACCEPT / FAILED / CLOSE
+  - processes and connections on port 22: `ss -tnp`, `ps aux | grep sshd`,
+    `lsof -i :22`
+- `scripts/vpn-remote-access/` — checklist section 10 (VPN and remote access):
+  - VPN interface detection (tun*, wg*, tailscale*) with type, state, address
+  - WireGuard peer details via `wg show`
+  - routing table filtered to show VPN routes vs others, split-tunnel vs full
+  - reachability test through the VPN: ping + route decision + SSH port probe
+  - auto-detects active VPN interface; override via `VPN_INTERFACE` in config
+- `scripts/traffic-capture-analysis/` — checklist section 7 (traffic capture
+  and analysis). **Caution:** packet capture may require sudo/root and
+  should only be performed on networks you are authorized to monitor:
+  - `tcpdump` during `ping` (ICMP)
+  - `tcpdump` for real TCP and UDP traffic
+  - `tshark` text capture (or Wireshark GUI if preferred)
+  - `iperf3` throughput test
+  - `mtr` latency/loss per hop
+  - `tracepath` route + MTU hints
+  - real-time traffic viewers (`iftop` / `nethogs` / `bmon`)
 
 ## Usage
 
@@ -76,6 +99,24 @@ Run either version directly while recording your terminal:
 
 ./scripts/network-discovery/bash/port-scan.sh 192.168.1.50 22,80,443
 ./scripts/network-discovery/python/port_scan.py 192.168.1.50 22,80,443
+
+./scripts/ssh-session-observability/bash/active-sessions.sh
+./scripts/ssh-session-observability/python/active_sessions.py
+
+./scripts/ssh-session-observability/bash/ssh-logs.sh
+./scripts/ssh-session-observability/python/ssh_logs.py
+
+./scripts/vpn-remote-access/bash/vpn-interface.sh
+./scripts/vpn-remote-access/python/vpn_interface.py
+
+./scripts/vpn-remote-access/bash/vpn-reachability.sh
+./scripts/vpn-remote-access/python/vpn_reachability.py
+
+./scripts/traffic-capture-analysis/bash/tcpdump-ping.sh
+./scripts/traffic-capture-analysis/python/tcpdump_ping.py
+
+./scripts/traffic-capture-analysis/bash/iperf3-test.sh
+./scripts/traffic-capture-analysis/python/iperf3_test.py
 ```
 
 ## Shared configuration (bash + python)
@@ -86,6 +127,8 @@ keep their own `config/` folder with the same loading convention:
 - `scripts/connectivity-troubleshooting/config/`
 - `scripts/port-service-inspection/config/`
 - `scripts/network-discovery/config/`
+- `scripts/traffic-capture-analysis/config/`
+- `scripts/vpn-remote-access/config/`
 
 Each has a `defaults.env` (tracked in git) and an optional `local.env`
 (ignored by git, copy it from `local.env.example`). Both bash and Python
@@ -96,7 +139,9 @@ scripts in that category load values in this order:
 3. an external config file, if pointed to by an env var
    (`CONNECTIVITY_CONFIG` for connectivity-troubleshooting,
    `PORTS_CONFIG` for port-service-inspection,
-   `DISCOVERY_CONFIG` for network-discovery)
+   `DISCOVERY_CONFIG` for network-discovery,
+   `TRAFFIC_CONFIG` for traffic-capture-analysis,
+   `VPN_CONFIG` for vpn-remote-access)
 4. environment variables
 5. CLI arguments (highest priority for positional targets/ports)
 
@@ -109,10 +154,28 @@ cp scripts/port-service-inspection/config/local.env.example \
 
 ## Recording recommendation
 
-- For terminal-only demos (any script here), use
-  [asciinema](https://asciinema.org/) (`asciinema rec demo.cast`). It only
-  captures the terminal (small files, no editing needed, exports to
-  GIF/MP4 with `agg` if you need a video file for slides).
+- Python demos from checklist sections 3 to 7 are configured for
+  [VHS](https://github.com/charmbracelet/vhs). Validate the 30-entry inventory,
+  render one GIF, or render the complete batch from the repository root:
+
+  ```bash
+  ./tools/vhs/render_python_videos.sh --validate
+  ./tools/vhs/render_python_videos.sh --one S03_01_interfaces
+  ./tools/vhs/render_python_videos.sh --all
+  ```
+
+  Generated recordings use names such as `S03_01_interfaces.gif` and are
+  written to `captures/videos/python/`. Completed recordings include a hidden
+  fingerprint of their command, Python source, config, and VHS settings.
+  `--all` skips only up-to-date GIFs and regenerates missing or stale ones, so
+  it can safely resume an interrupted batch after code/config changes. Pass
+  `--force` to regenerate even current GIFs. VHS waits until each Python command
+  finishes and then keeps its final output visible for two seconds. Commands
+  time out after 10 minutes by default; override this with
+  `VHS_WAIT_TIMEOUT=20m` when needed.
+  Before a batch containing privileged tools (`tcpdump`, `tshark`, `arp-scan`,
+  `ethtool`, `iftop`, or `nethogs`), refresh the sudo timestamp once with
+  `sudo -v`.
 - For diagrams, antennas, or anything that isn't a terminal, use a normal
   screen recorder (e.g. OBS) instead.
 - For backup captures in case a live demo fails (checklist section 13),

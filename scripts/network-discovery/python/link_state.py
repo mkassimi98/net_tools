@@ -24,10 +24,44 @@ def run(command):
         return ""
 
 
+def detect_interfaces():
+    iw_output = run(["iw", "dev"])
+    wifi_match = re.search(r"^\s*Interface\s+(\S+)", iw_output, flags=re.MULTILINE)
+    wifi_iface = wifi_match.group(1) if wifi_match else ""
+
+    link_output = run(["ip", "-o", "link", "show"])
+    candidates = []
+    for line in link_output.splitlines():
+        match = re.match(r"^\d+:\s+([^:@]+)", line)
+        if not match:
+            continue
+        name = match.group(1)
+        if name == "lo" or name == wifi_iface:
+            continue
+        if name.startswith(("docker", "br-", "veth", "tun", "tap", "tailscale", "wg")):
+            continue
+        candidates.append(name)
+
+    eth_iface = next(
+        (name for name in candidates if name.startswith(("eth", "en"))),
+        candidates[0] if candidates else "",
+    )
+    return eth_iface, wifi_iface
+
+
 def main():
     config = get_config()
-    eth_iface = sys.argv[1] if len(sys.argv) > 1 else config.get("ETH_INTERFACE", "eth0")
-    wifi_iface = sys.argv[2] if len(sys.argv) > 2 else config.get("WIFI_INTERFACE", "wlan0")
+    detected_eth, detected_wifi = detect_interfaces()
+    eth_iface = (
+        sys.argv[1]
+        if len(sys.argv) > 1
+        else config.get("ETH_INTERFACE", "") or detected_eth
+    )
+    wifi_iface = (
+        sys.argv[2]
+        if len(sys.argv) > 2
+        else config.get("WIFI_INTERFACE", "") or detected_wifi
+    )
 
     print("\033[2J\033[H", end="")
 
@@ -41,7 +75,7 @@ def main():
     print(f"{GRAY}{subtitle.center(line_width)}{RESET}")
     print(f"{GRAY}{'-' * line_width}{RESET}")
 
-    eth_output = run(["sudo", "-n", "ethtool", eth_iface])
+    eth_output = run(["ethtool", eth_iface]) if eth_iface else ""
     print(f"{BOLD}Ethernet: {eth_iface}{RESET}")
     if eth_output:
         for key in ("Speed", "Duplex", "Link detected"):
