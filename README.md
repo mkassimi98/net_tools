@@ -518,41 +518,6 @@ python3 -m py_compile scripts/*/python/*.py
 find scripts -type f \( -name "*.sh" -o -name "*.py" \) -exec chmod +x {} \;
 ```
 
-Recommended local checks before committing:
-
-```bash
-git status
-bash -n scripts/*/bash/*.sh
-python3 -m py_compile scripts/*/python/*.py
-```
-
----
-
-## Recommended Repository Metadata
-
-Suggested GitHub repository description:
-
-```text
-Professional Linux network diagnostics, discovery and monitoring tools for engineering workshops and field troubleshooting.
-```
-
-Suggested GitHub topics:
-
-```text
-networking
-linux
-diagnostics
-bash
-python
-network-tools
-monitoring
-troubleshooting
-vpn
-ssh
-cybersecurity
-workshop
-```
-
 ---
 
 ## License
