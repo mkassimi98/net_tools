@@ -5,8 +5,8 @@ from pathlib import Path
 _CONFIG_DIR = Path(__file__).parent.parent / "config"
 
 _DEFAULTS = {
-    "VPN_INTERFACE": "",
-    "VPN_PING_TARGET": "8.8.8.8",
+    "VPN_INTERFACE": "tun1",
+    "VPN_PING_TARGET": "1.0.0.1",
     "VPN_PING_COUNT": "4",
     "VPN_SSH_TARGET": "",
 }

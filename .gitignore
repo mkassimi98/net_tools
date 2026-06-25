@@ -1,5 +1,7 @@
-# Workshop capture backups (generated locally by scripts/checklist/*.sh)
-captures/
+# Temporary capture backups (but keep final GIF recordings)
+captures/vhs-tapes/
+captures/*.txt
+captures/*.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -231,3 +233,6 @@ scripts/network-discovery/config/local.env
 scripts/traffic-capture-analysis/config/local.env
 scripts/ssh-session-observability/config/local.env
 scripts/vpn-remote-access/config/local.env
+
+# Internal project planning (keep locally, not in repo)
+docs/superpowers/
